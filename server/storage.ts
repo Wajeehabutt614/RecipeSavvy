@@ -97,21 +97,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchRecipes(userId: string, query?: string, category?: string): Promise<Recipe[]> {
-    let whereCondition = eq(recipes.userId, userId);
+    let conditions = [eq(recipes.userId, userId)];
 
     if (query) {
-      const searchCondition = or(
-        ilike(recipes.title, `%${query}%`),
-        ilike(recipes.description, `%${query}%`)
+      conditions.push(
+        or(
+          ilike(recipes.title, `%${query}%`),
+          ilike(recipes.description, `%${query}%`)
+        )!
       );
-      if (searchCondition) {
-        whereCondition = and(whereCondition, searchCondition);
-      }
     }
 
     if (category) {
-      whereCondition = and(whereCondition, eq(recipes.category, category));
+      conditions.push(eq(recipes.category, category));
     }
+
+    const whereCondition = conditions.length > 1 ? and(...conditions) : conditions[0];
 
     return await db
       .select()
