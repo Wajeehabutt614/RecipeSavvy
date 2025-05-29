@@ -93,20 +93,20 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(recipes)
       .where(and(eq(recipes.id, id), eq(recipes.userId, userId)));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async searchRecipes(userId: string, query?: string, category?: string): Promise<Recipe[]> {
     let whereCondition = eq(recipes.userId, userId);
 
     if (query) {
-      whereCondition = and(
-        whereCondition,
-        or(
-          ilike(recipes.title, `%${query}%`),
-          ilike(recipes.description, `%${query}%`)
-        )
+      const searchCondition = or(
+        ilike(recipes.title, `%${query}%`),
+        ilike(recipes.description, `%${query}%`)
       );
+      if (searchCondition) {
+        whereCondition = and(whereCondition, searchCondition);
+      }
     }
 
     if (category) {

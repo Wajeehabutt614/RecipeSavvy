@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
@@ -106,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const recipe = await storage.createRecipe(userId, validatedData);
       res.status(201).json(recipe);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating recipe:", error);
       if (error.name === "ZodError") {
         res.status(400).json({ message: "Invalid recipe data", errors: error.errors });
